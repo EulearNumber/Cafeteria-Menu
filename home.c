@@ -36,12 +36,11 @@ typedef struct Cafeteria {
     vegetarianMenu* vegetarianMenu;
 } Cafeteria;
 
-Cafeteria* read_menu(Cafeteria* cafeteria);
-Cafeteria* init(Cafeteria* cafeteria);
+void initialize_menus(Cafeteria* cafeteria, char* csv_file_name);
 int main() {
     Cafeteria* cafeteria = (Cafeteria*) malloc(sizeof(Cafeteria));
-    cafeteria = init(cafeteria);
-    cafeteria = read_menu(cafeteria);
+    char* theFile = "cafeteria_march_menu.csv";
+    initialize_menus(cafeteria, theFile);
     printf("%s",cafeteria->normalmenu[0].mainDish); 
     printf("The month is %s",cafeteria->month);
 
@@ -52,16 +51,8 @@ int main() {
     free(cafeteria);
 }
 
-Cafeteria* init(Cafeteria* cafeteria) {
-    cafeteria = malloc(sizeof(Cafeteria));
-    cafeteria->normalmenu = calloc(31, sizeof(normalMenu));
-    cafeteria->veganMenu = calloc(31, sizeof(veganMenu));
-    cafeteria->vegetarianMenu = calloc(31, sizeof(vegetarianMenu));
-    cafeteria->month = NULL;
-    return cafeteria;
-}
 
-Cafeteria* read_menu(Cafeteria* cafeteria)
+void initialize_menus(Cafeteria* cafeteria, char* theFile)
 {
   FILE* fp;
   char ch;
@@ -70,9 +61,14 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
   char** arr = (char**) malloc(6 * sizeof(char*));
   int i, normalIndex = 0, veganIndex = 0, vegetarianIndex = 0,j,n;
   char buffer[255];
-  char theFile[] = "cafeteria_march_menu.csv";
+  
   int hold[2];
   int charcount = 0;
+  //Initializing
+  cafeteria->normalmenu = (normalMenu*) malloc(sizeof(normalMenu) * 31);
+  cafeteria->veganMenu = (veganMenu*)malloc(sizeof(veganMenu) * 31);
+  cafeteria->vegetarianMenu = (vegetarianMenu*)malloc(sizeof(vegetarianMenu) * 31);
+  cafeteria->month = NULL;
 
   // Month name
   for (int i = 0; theFile[i] != '\0'; i++) 
@@ -84,9 +80,9 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
       if (charcount == 2)
       {
         int range = hold[1] - hold[0];
-        cafeteria->month = (char*) malloc((range + 1) * sizeof(char));
-        strncpy(cafeteria->month, theFile + hold[0] + 1, range);
-        cafeteria->month[range] = '\0'; 
+        cafeteria->month = (char*) malloc((range) * sizeof(char));
+        strncpy(cafeteria->month, theFile + hold[0] + 1, range - 1);
+        cafeteria->month[range - 1] = '\0'; 
         break;
       }
     }
@@ -110,7 +106,6 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
             }
         }
     }
-
       if(strcmp(arr[0],  "Normal" ) == 0)
       {
         strcpy((cafeteria->normalmenu[normalIndex]).date, arr[1]);
@@ -119,6 +114,7 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
         printf("Flag:1 This string is %s \n", cafeteria -> normalmenu[normalIndex].mainDish);
         strcpy((cafeteria->normalmenu[normalIndex]).sideDish, arr[4]);
         strcpy((cafeteria->normalmenu[normalIndex]).extra, arr[5]);
+        memset(cafeteria->normalmenu[normalIndex].saleCount, 0, 3);
         normalIndex++;
 
       }
@@ -145,5 +141,4 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
   }
   free(arr);
   fclose(fp);
-  return cafeteria;
 }
