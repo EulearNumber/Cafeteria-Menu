@@ -39,14 +39,16 @@ typedef struct Cafeteria {
 Cafeteria* read_menu(Cafeteria* cafeteria);
 Cafeteria* init(Cafeteria* cafeteria);
 int main() {
-    Cafeteria* cafeteria = NULL;
+    Cafeteria* cafeteria = (Cafeteria*) malloc(sizeof(Cafeteria));
     cafeteria = init(cafeteria);
     cafeteria = read_menu(cafeteria);
-    printf("%s",cafeteria->normalmenu[0].mainDish);
+    printf("%s",cafeteria->normalmenu[0].mainDish); 
+    printf("The month is %s",cafeteria->month);
 
     free(cafeteria->normalmenu);
     free(cafeteria->veganMenu);
     free(cafeteria->vegetarianMenu);
+    free(cafeteria->month);
     free(cafeteria);
 }
 
@@ -68,15 +70,30 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
   char** arr = (char**) malloc(6 * sizeof(char*));
   int i, normalIndex = 0, veganIndex = 0, vegetarianIndex = 0,j,n;
   char buffer[255];
-  int a = 0;
-  for( a = 0; a < 6;a++)
-  {
-    
-	arr[a] = malloc(15*sizeof(char));
-    
+  char theFile[] = "cafeteria_march_menu.csv";
+  int hold[2];
+  int charcount = 0;
+
+  // Month name
+  for (int i = 0; theFile[i] != '\0'; i++) 
+  { 
+    if(theFile[i] == '_')
+    {
+      hold[charcount] = i;
+      charcount++;
+      if (charcount == 2)
+      {
+        int range = hold[1] - hold[0];
+        cafeteria->month = (char*) malloc((range + 1) * sizeof(char));
+        strncpy(cafeteria->month, theFile + hold[0] + 1, range);
+        cafeteria->month[range] = '\0'; 
+        break;
+      }
+    }
   }
-  
-  fp = fopen("cafeteria_march_menu.csv", "r");
+
+  // Reading the file and storing the information
+  fp = fopen(theFile, "r");
   while(fgets(buffer, 255, fp) != NULL) {
       token = strtok(buffer, Split);
       i = 0, j = 0;
@@ -84,7 +101,7 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
         arr[i++] = token;
         token = strtok(NULL, Split);
       }
- 			
+ 			// Removing the double quoates in the .csv file
       for(n=0; n<5; n++) {
         for(j=0; j<strlen(arr[n]); j++) {
             if(arr[n][j] == '\"') {
@@ -125,7 +142,6 @@ Cafeteria* read_menu(Cafeteria* cafeteria)
         strcpy((cafeteria->veganMenu[veganIndex]).extra, arr[5]);
         veganIndex++;
       }
-     
   }
   free(arr);
   fclose(fp);
